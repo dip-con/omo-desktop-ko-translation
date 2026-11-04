@@ -1,0 +1,486 @@
+{
+  "verdict": "ok",
+  "failures": [],
+  "fingerprint": {
+    "appVersion": "2026.1102.3",
+    "client": "d49851941f8f6c2d6daa530848cd54b21780a05ea8934ae6f312cd4eda16bd51",
+    "runtime": {
+      "omoRef": "v5.1.60",
+      "omoSha": "9cfa9cc7f7c86f972b9b6513d526ca9d427e4109"
+    },
+    "plugin": "92e773394c2217481b8811c6a1734077b42c6d79e7b5fea49f0b0dbf4611850e"
+  },
+  "appVersion": "2026.1102.3",
+  "planningBuild": "2026.1024.2",
+  "buildChangedFromPlanning": true,
+  "mainTarget": "omo://app",
+  "mainTargetUrl": "omo://app/",
+  "mainTargetRule": "first page with omo:// scheme",
+  "mainTargetMatchRule": "match by protocol and host: new URL(u).protocol === \"omo:\" && new URL(u).host === \"app\"; never by URL.origin (it is the string \"null\" for omo://)",
+  "targetsSeen": [
+    {
+      "type": "page",
+      "url": "omo://app/",
+      "title": ""
+    }
+  ],
+  "bootShell": "done",
+  "anchorCounts": {
+    "root": 1,
+    "settingsTrigger": 1,
+    "sidebarNavItem": 4,
+    "settingsNavPath": 0
+  },
+  "anchors": [
+    {
+      "selector": "[data-settings-nav-path=\"/settings/general\"]",
+      "route": "/settings/general"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/appearance\"]",
+      "route": "/settings/appearance"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/keybindings\"]",
+      "route": "/settings/keybindings"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/models\"]",
+      "route": "/settings/models"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/agent-runtime\"]",
+      "route": "/settings/agent-runtime"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/tools\"]",
+      "route": "/settings/tools"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/memory\"]",
+      "route": "/settings/memory"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/integrations\"]",
+      "route": "/settings/integrations"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/connections\"]",
+      "route": "/settings/connections"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/storage\"]",
+      "route": "/settings/storage"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/about\"]",
+      "route": "/settings/about"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/diagnostics\"]",
+      "route": "/settings/diagnostics"
+    },
+    {
+      "selector": "[data-settings-nav-path=\"/settings/open-source-licenses\"]",
+      "route": "/settings/open-source-licenses"
+    },
+    {
+      "selector": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+      "route": "/settings/"
+    }
+  ],
+  "settingsNav": {
+    "count": 13,
+    "paths": [
+      "/settings/general",
+      "/settings/appearance",
+      "/settings/keybindings",
+      "/settings/models",
+      "/settings/agent-runtime",
+      "/settings/tools",
+      "/settings/memory",
+      "/settings/integrations",
+      "/settings/connections",
+      "/settings/storage",
+      "/settings/about",
+      "/settings/diagnostics",
+      "/settings/open-source-licenses"
+    ]
+  },
+  "contentSelector": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+  "contentProbe": {
+    "ancestor": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+    "ancestorTag": "div",
+    "ancestorId": null,
+    "unstable": false,
+    "method": "lca",
+    "mutations": 46,
+    "liveMutations": 12,
+    "coverage": {
+      "covered": 12,
+      "total": 12
+    },
+    "runs": [
+      {
+        "mutations": 46,
+        "liveMutations": 12,
+        "method": "lca",
+        "ancestor": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "coverage": {
+          "covered": 12,
+          "total": 12
+        },
+        "navRootPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > div:nth-of-type(1) > div:nth-of-type(2) > div > nav > div:nth-of-type(2) > div > div > div > div",
+        "lcaPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "lcaContainsNav": false,
+        "droppedNavPaths": [],
+        "groups": [
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2) > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(1)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div:nth-of-type(2) > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(3)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > header > div > div",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > header > div > nav > ol > li:nth-of-type(3) > h1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "mutations": 51,
+        "liveMutations": 18,
+        "method": "lca",
+        "ancestor": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "coverage": {
+          "covered": 18,
+          "total": 18
+        },
+        "navRootPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > div:nth-of-type(1) > div:nth-of-type(2) > div > nav > div:nth-of-type(2) > div > div > div > div",
+        "lcaPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "lcaContainsNav": false,
+        "droppedNavPaths": [],
+        "groups": [
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(1) > div:nth-of-type(2) > div > div",
+            "count": 3
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(1) > div:nth-of-type(2) > div > div",
+            "count": 3
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2) > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(1)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(3)",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "mutations": 45,
+        "liveMutations": 12,
+        "method": "lca",
+        "ancestor": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "coverage": {
+          "covered": 12,
+          "total": 12
+        },
+        "navRootPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > div:nth-of-type(1) > div:nth-of-type(2) > div > nav > div:nth-of-type(2) > div > div > div > div",
+        "lcaPath": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+        "lcaContainsNav": false,
+        "droppedNavPaths": [],
+        "groups": [
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div",
+            "count": 2
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#code-font > div:nth-of-type(2) > div:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(1)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(2)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > div > div > div > section#typography > div:nth-of-type(2) > div#interface-font > div:nth-of-type(2) > div > div > div > div > p > span:nth-of-type(3)",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > header > div > div",
+            "count": 1
+          },
+          {
+            "path": "html > body > div#root > div:nth-of-type(1) > div > div > div > main > div > header > div > nav > ol > li:nth-of-type(3) > h1",
+            "count": 1
+          }
+        ]
+      }
+    ]
+  },
+  "nativeCardStyle": {
+    "source": "dom",
+    "selector": "[data-settings-surface=\"outer\"]",
+    "tag": "div",
+    "color": "oklab(0.97 0 0)",
+    "background": "oklab(0.179434 0.00000210106 9.08971e-7 / 0.4)",
+    "fontFamily": "\"Inter Variable\", Inter, \"Pretendard Variable\", \"Apple SD Gothic Neo\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif",
+    "fontSize": "16px",
+    "fontWeight": "445",
+    "borderTopWidth": "0.666667px",
+    "borderRadius": "14px",
+    "borderTop": "0.666667px solid oklab(0.999994 0.000045836 0.0000200272 / 0.0444)",
+    "padding": "0px"
+  },
+  "cardFound": true,
+  "cardPolledMs": 1025,
+  "settingsSurface": [
+    {
+      "attrName": "data-settings-scroll-target",
+      "value": "true",
+      "count": 10
+    },
+    {
+      "attrName": "data-settings-surface",
+      "value": "outer",
+      "count": 10
+    },
+    {
+      "attrName": "data-settings-back",
+      "value": "true",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/about",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/agent-runtime",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/appearance",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/connections",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/diagnostics",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/general",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/integrations",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/keybindings",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/memory",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/models",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/open-source-licenses",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/storage",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-nav-path",
+      "value": "/settings/tools",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-page-scroll",
+      "value": "true",
+      "count": 1
+    },
+    {
+      "attrName": "data-settings-scope-sentence",
+      "value": "true",
+      "count": 1
+    }
+  ],
+  "exclusionSelectors": [
+    {
+      "selector": "pre",
+      "count": 0,
+      "view": "empty-state"
+    },
+    {
+      "selector": "code",
+      "count": 0,
+      "view": "empty-state"
+    },
+    {
+      "selector": ".ProseMirror",
+      "count": 1,
+      "view": "empty-state"
+    },
+    {
+      "selector": "textarea",
+      "count": 0,
+      "view": "empty-state"
+    },
+    {
+      "selector": "input",
+      "count": 4,
+      "view": "empty-state"
+    },
+    {
+      "selector": "[contenteditable]",
+      "count": 1,
+      "view": "empty-state"
+    },
+    {
+      "selector": "[role=\"log\"]",
+      "count": 0,
+      "view": "empty-state"
+    },
+    {
+      "selector": "[role=\"tree\"]",
+      "count": 0,
+      "view": "empty-state"
+    }
+  ],
+  "threadView": {
+    "measured": false,
+    "reason": "no existing conversation in the sidebar"
+  },
+  "fileTree": {
+    "measured": false,
+    "reason": "no file tree open in the measured views"
+  },
+  "nativeSurfaces": {
+    "dom": {
+      "menubar": 0,
+      "menu": 0
+    },
+    "native": "OS-native menus and tray are outside the page; not measurable over CDP"
+  },
+  "snapshotDir": "fixtures/live/d49851941f8f6c2d6daa530848cd54b21780a05ea8934ae6f312cd4eda16bd51/",
+  "snapshotProvenance": null,
+  "contentSelectorSource": "live-measurement",
+  "settingsTrigger": {
+    "selector": "[data-settings-trigger]",
+    "homeCount": 1
+  },
+  "reloadKeepsInjection": true,
+  "bindingRoundTrip": true,
+  "bindingMainWorldTypeof": "undefined",
+  "screenshots": [
+    {
+      "file": "shot-before-injection.png",
+      "bytes": 754912
+    },
+    {
+      "file": "shot-after-injection.png",
+      "bytes": 756343
+    }
+  ],
+  "measuredAt": {
+    "exclusions": "2026-11-03T23:10:27.935Z",
+    "settingsNav": "2026-11-03T23:10:32.248Z",
+    "contentSelector": "2026-11-03T23:10:32.248Z",
+    "cardStyle": "2026-11-03T23:10:32.248Z",
+    "bindingReload": "2026-11-03T23:10:33.108Z"
+  }
+}

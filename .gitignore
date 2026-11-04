@@ -1,0 +1,7 @@
+node_modules/
+evidence/
+*.log
+.tmp/
+mods/ko/strings.json
+fixtures/live/
+mods/ko/extra-strings.json

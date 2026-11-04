@@ -1,0 +1,168 @@
+{
+  "fingerprint": {
+    "appVersion": "2026.1102.3",
+    "client": "d49851941f8f6c2d6daa530848cd54b21780a05ea8934ae6f312cd4eda16bd51",
+    "runtime": {
+      "omoRef": "v5.1.60",
+      "omoSha": "9cfa9cc7f7c86f972b9b6513d526ca9d427e4109"
+    },
+    "plugin": "92e773394c2217481b8811c6a1734077b42c6d79e7b5fea49f0b0dbf4611850e"
+  },
+  "entries": {
+    "Marked done by you": {
+      "ko": "내가 완료로 표시함",
+      "source": "resources/omo-server/client/assets/app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~e2lwpes9-DUxHHMVQ.js",
+      "note": "settledBy.user object key, not an extracted attribute"
+    },
+    "Syncing…": {
+      "ko": "동기화 중…",
+      "source": "resources/omo-server/client/assets/app~_chat._environmentId._threadId-DXH29J12.js",
+      "note": "ternary value"
+    },
+    "Syncing latest activity…": {
+      "ko": "최신 활동을 동기화하는 중…",
+      "source": "resources/omo-server/client/assets/app~_chat._environmentId._threadId-DXH29J12.js",
+      "note": "ternary value for screen readers"
+    },
+    "Created": {
+      "ko": "생성됨",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "Pd={created:`Created`} object key; matcher skips object keys"
+    },
+    "In": {
+      "ko": "후",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "Ec={after:`In`} lookup table"
+    },
+    "hour": {
+      "ko": "시간",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "table entry hours:`hour`"
+    },
+    "hours": {
+      "ko": "시간",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "table entry hours:`hour`/`hours` pair"
+    },
+    "Today": {
+      "ko": "오늘",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "Ec table today:`Today`"
+    },
+    "Monday": {
+      "ko": "월요일",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "Ec table monday:`Monday`"
+    },
+    "Add option": {
+      "ko": "옵션 추가",
+      "source": "resources/omo-server/client/assets/app~settings.storage~settings.general~settings.appearance-BCmLdEab.js",
+      "note": "array child children:[l,`Add option`]"
+    },
+    "Menu now: In 1 hour · In 3 hours · This evening · Tomorrow · Next week": {
+      "ko": "지금 메뉴: 1시간 후 · 3시간 후 · 오늘 저녁 · 내일 · 다음 주",
+      "source": "runtime-assembled",
+      "note": "no literal in bundle; joined at runtime from table labels (In, Today, Tomorrow) and This evening / Tomorrow labels in app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~gy76h25a-qGTttwAw.js, plus digits"
+    },
+    "Measuring attachment storage...": {
+      "ko": "첨부 파일 저장 공간을 측정하는 중...",
+      "source": "resources/omo-server/client/assets/app~settings.storage-DwGfzq7k.js",
+      "note": "ternary value"
+    },
+    "Loading archived threads": {
+      "ko": "보관된 대화를 불러오는 중",
+      "source": "resources/omo-server/client/assets/app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~e2lwpes9-DUxHHMVQ.js",
+      "note": "object key loading:"
+    },
+    "Checking connected environments.": {
+      "ko": "연결된 환경을 확인하는 중이에요.",
+      "source": "resources/omo-server/client/assets/app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~e2lwpes9-DUxHHMVQ.js",
+      "note": "object key checking:"
+    },
+    "Start a thread": {
+      "ko": "대화 시작",
+      "source": "resources/omo-server/client/assets/app~main-B4wH-dDr.js",
+      "note": "object key action:"
+    },
+    "Work Log": {
+      "ko": "작업 로그",
+      "source": "resources/omo-server/client/assets/app~_chat._environmentId._threadId-CfBsfRFA.js",
+      "note": "ternary value"
+    },
+    "Mark as not done": {
+      "ko": "완료 표시 해제",
+      "source": "resources/omo-server/client/assets/app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~e2lwpes9-DUxHHMVQ.js",
+      "note": "object key markNotDone:"
+    },
+    "Local checkout": {
+      "ko": "로컬 체크아웃",
+      "source": "resources/omo-server/client/assets/app~main~_chat._environmentId._threadId~settings.tools~settings.storage~settings.projects~s~ox2ombwb-_6fQPEfd.js",
+      "note": "ternary return"
+    },
+    "Continuing without a pre-turn checkpoint": {
+      "ko": "턴 시작 전 체크포인트 없이 계속하는 중",
+      "source": "resources/omo-server/t3.exe",
+      "note": "native binary, not a JS asset"
+    },
+    "KaTeX mathematical fonts": {
+      "ko": "KaTeX 수학 글꼴",
+      "source": "resources/omo-server/client/third-party-licenses.json",
+      "note": "JSON data, not scanned"
+    },
+    "Turn off": {
+      "ko": "끄기",
+      "source": "resources/omo-server/client/assets/app~settings.models-C4GN0Act.js",
+      "note": "array child and ternary"
+    },
+    "This provider is configured outside OmO, so there is nothing to sign in or out of here.": {
+      "ko": "이 공급자는 OmO 밖에서 설정되어 있어서 여기서 로그인하거나 로그아웃할 것이 없어요.",
+      "source": "resources/omo-server/client/assets/app~settings.models~welcome-C27GW5BB.js",
+      "note": "ternary value"
+    },
+    "OmO's model runtime could not start on the selected device. Check the runtime installation, then refresh provider status.": {
+      "ko": "선택한 기기에서 OmO 모델 런타임을 시작할 수 없어요. 런타임 설치를 확인한 뒤 공급자 상태를 새로 고치세요.",
+      "source": "resources/omo-server/client/assets/app~_chat._environmentId._threadId~settings.storage~settings.models~settings.general~settin~be3y6wpk-Dp4XPNjM.js",
+      "note": "assignment; over 120 characters"
+    },
+    "Live servers and tool counts that the active OmO runtime reports without a configuration file here appear in this list. It refreshes when the runtime changes.": {
+      "ko": "활성 OmO 런타임이 이 위치의 설정 파일 없이 보고하는 실시간 서버와 도구 개수가 이 목록에 나타나요. 런타임이 바뀌면 새로 고쳐져요.",
+      "source": "resources/omo-server/client/assets/app~settings.tools-DfblkqKB.js",
+      "note": "description: key matches; over 120 characters"
+    },
+    "Loading devices": {
+      "ko": "기기를 불러오는 중",
+      "source": "resources/omo-server/client/assets/app~settings.memory-BXrBm1si.js",
+      "note": "array child"
+    },
+    "Connections use no proxy.": {
+      "ko": "연결에 프록시를 사용하지 않아요.",
+      "source": "runtime-assembled",
+      "note": "not found in client assets, app.asar, t3.exe or third-party-licenses.json (0 hits); unverified"
+    },
+    "Network proxy support is off. OmO's own connections connect directly and browser views use this computer's settings. Your saved choice is kept and applies when support is turned on.": {
+      "ko": "네트워크 프록시 지원이 꺼져 있어요. OmO 자체 연결은 직접 연결되고, 브라우저 보기는 이 컴퓨터의 설정을 써요. 저장한 선택은 유지되며, 지원을 켜면 적용돼요.",
+      "source": "resources/app.asar",
+      "note": "Electron main-process bundle, outside client assets"
+    },
+    "Check for Updates": {
+      "ko": "업데이트 확인",
+      "source": "resources/omo-server/client/assets/app~settings.about--yw2-wAI.js",
+      "note": "ternary ?? fallback"
+    },
+    "Waiting for the resource history.": {
+      "ko": "리소스 기록을 기다리는 중이에요.",
+      "source": "resources/omo-server/client/assets/app~settings.diagnostics-GENu98fA.js",
+      "note": "ternary value"
+    },
+    "Loading live processes...": {
+      "ko": "실시간 프로세스를 불러오는 중...",
+      "source": "resources/omo-server/client/assets/app~settings.diagnostics-GENu98fA.js",
+      "note": "key emptyLabel not matched"
+    },
+    "Collecting process resource samples...": {
+      "ko": "프로세스 리소스 샘플을 수집하는 중...",
+      "source": "resources/omo-server/client/assets/app~settings.diagnostics-GENu98fA.js",
+      "note": "key emptyLabel not matched"
+    }
+  }
+}

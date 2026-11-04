@@ -1,0 +1,12 @@
+{
+  "name": "omo-desktop-mod-ko",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test --test-isolation=none test/*.test.mjs",
+    "test:local": "node --test --test-isolation=none test-local/*.test.mjs"
+  }
+}
