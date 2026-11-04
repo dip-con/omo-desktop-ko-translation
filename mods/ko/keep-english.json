@@ -992,6 +992,7 @@
     "redraws": "code",
     "\\angl": "code",
     "\\fbox": "code",
-    "at": "term"
+    "at": "term",
+    "Daily": "name"
   }
 }
