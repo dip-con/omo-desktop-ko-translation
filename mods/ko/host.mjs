@@ -1,54 +1,113 @@
-// Host side of the ko mod. The page cannot import modules, so it asks this file for the exclusion list and for
-// translations. translate uses the same translateText rule as translate.mjs, so the page and the rule cannot drift.
+// Host side of the ko mod. page.js asks it for the exclusion list (config) and for translations (translate).
+// Text that comes back unchanged and reads as interface copy is counted into <ctx.stateDir>/ko-missing.json when
+// the page passes {record: true}; tools/collect.mjs turns that file into dictionary work.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { translateText } from './translate.mjs';
-import { createRecorder, looksLikeUiText } from './missing.mjs';
 
-// FACTS exclusionSelectors plus the mod's own zones. Text and attributes inside these are never changed.
-// Key chips: every key cap is a kbd with data-slot="kbd". Key names are not copy, so the translator never changes them.
-export const KEY_CHIP_SELECTORS = ['kbd[data-slot="kbd"]'];
+// Text and attributes inside these are never changed. Key caps (kbd[data-slot="kbd"]) are key names, not copy.
 export const EXCLUSION_SELECTORS = [
   'pre', 'code', '.ProseMirror', 'textarea', 'input', '[contenteditable]', '[role="log"]', '[role="tree"]',
-  '[data-diff]', '.xterm', '[data-omo-mod]', ...KEY_CHIP_SELECTORS,
+  '[data-diff]', '.xterm', '[data-omo-mod-root]', 'kbd[data-slot="kbd"]',
 ];
-const MAX_BATCH = 500;
+export const MAX_BATCH = 500;
+export const MISSING_FILE = 'ko-missing.json';
+export const FLUSH_MS = 2000;
+export const MAX_KEYS = 5000;
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const recorder = createRecorder();
 let dict = null;
 
-// ko.json holds the exact entries and the runtime patterns; both reach the page only through translate below.
-// keep-english.json lists text that stays English on purpose, so it is never recorded as missing.
 function dictionary() {
   if (dict === null) {
-    const ko = JSON.parse(fs.readFileSync(path.join(HERE, 'ko.json'), 'utf8'));
-    const keep = JSON.parse(fs.readFileSync(path.join(HERE, 'keep-english.json'), 'utf8'));
-    dict = { entries: ko.entries, patterns: ko.patterns ?? {}, keepEnglish: new Set(Object.keys(keep.entries)) };
+    const read = (name) => JSON.parse(fs.readFileSync(path.join(HERE, name), 'utf8'));
+    const ko = read('ko.json');
+    dict = { entries: ko.entries, patterns: ko.patterns ?? {}, keep: new Set(Object.keys(read('keep-english.json').entries)) };
   }
   return dict;
 }
 
-// Writes the recorded misses now instead of at the next batch tick.
-export function flushMissing() {
-  recorder.flush();
+// Whether trimmed text reads as interface copy: a Latin letter, 2..120 characters, not kept English on purpose,
+// and not a number with a unit, a URL, a path or a code identifier.
+export function looksLikeUiText(text, keepEnglish) {
+  if (text.length < 2 || text.length > 120 || !/[A-Za-z]/.test(text) || keepEnglish.has(text)) return false;
+  if (/^[\d\s.,:;%+\-x×/]*[A-Za-z]{0,3}$/.test(text) && /\d/.test(text)) return false;
+  if (/:\/\/|^(mailto|file|data|www\.)/i.test(text) || /^(~|\.{1,2})?\//.test(text)) return false;
+  const oneWord = !/\s/.test(text);
+  return !(oneWord && (/[/\\]/.test(text) || /[a-z][A-Z]|[_.]|::|^-|\(\)$/.test(text)));
 }
 
-// Bridge entry point: method and args are the values page.js sent through omoMods.call.
-export function handle(method, args) {
+// Pure: doc ({version: 1, strings: {text: {count, firstSeen, lastSeen}}}) plus the pending counts. Over MAX_KEYS
+// the least recently seen keys are dropped.
+export function mergeMissing(doc, pending, now) {
+  const strings = doc?.version === 1 && doc.strings && typeof doc.strings === 'object' ? { ...doc.strings } : {};
+  for (const [text, count] of pending) {
+    const prev = strings[text];
+    strings[text] = { count: (prev?.count ?? 0) + count, firstSeen: prev?.firstSeen ?? now, lastSeen: now };
+  }
+  const keys = Object.keys(strings);
+  if (keys.length <= MAX_KEYS) return { version: 1, strings };
+  const kept = keys.sort((a, b) => strings[b].lastSeen.localeCompare(strings[a].lastSeen)).slice(0, MAX_KEYS);
+  return { version: 1, strings: Object.fromEntries(kept.map((k) => [k, strings[k]])) };
+}
+
+// Batches misses per state dir: at most one atomic write per FLUSH_MS, plus one at process exit. A failed write is
+// reported and dropped; recording must never break translation.
+export function createRecorder({ now = () => new Date().toISOString(), schedule = (fn, ms) => setTimeout(fn, ms).unref() } = {}) {
+  const pending = new Map(); // file -> Map(text -> count)
+  let timer = null;
+  let exitHooked = false;
+
+  function flush() {
+    timer = null;
+    for (const [file, batch] of pending) {
+      pending.delete(file);
+      try {
+        let doc = null;
+        try {
+          doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+        } catch (e) {
+          if (e.code !== 'ENOENT') console.error(`ko mod: ${file} unreadable (${e.message}); starting a new list`);
+        }
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        const tmp = `${file}.${process.pid}.tmp`;
+        fs.writeFileSync(tmp, `${JSON.stringify(mergeMissing(doc, batch, now()), null, 2)}\n`);
+        fs.renameSync(tmp, file);
+      } catch (e) {
+        console.error(`ko mod: could not record ${batch.size} missing strings to ${file}: ${e.message}`);
+      }
+    }
+  }
+
+  function record(file, text) {
+    if (!exitHooked) {
+      exitHooked = true;
+      process.once('exit', flush);
+    }
+    const batch = pending.get(file) ?? new Map();
+    batch.set(text, (batch.get(text) ?? 0) + 1);
+    pending.set(file, batch);
+    timer ??= schedule(flush, FLUSH_MS);
+  }
+
+  return { record, flush };
+}
+
+export const recorder = createRecorder();
+
+// Bridge entry point. ctx = {modId, modDir, stateDir, modsHome} from the loader.
+export function handle(method, args, ctx) {
   if (method === 'config') return { exclusionSelectors: EXCLUSION_SELECTORS };
   if (method === 'translate') {
-    const texts = args[0];
+    const [texts, opts] = args;
     if (!Array.isArray(texts) || texts.length > MAX_BATCH || !texts.every((t) => typeof t === 'string')) {
-      throw new Error('translate takes one array of at most 500 strings');
+      throw new Error(`translate takes one array of at most ${MAX_BATCH} strings`);
     }
-    // args[1].record is false when the page is outside the screens the dictionary covers (the chat, for now).
-    const record = args[1]?.record !== false;
-    const { entries, patterns, keepEnglish } = dictionary();
+    const { entries, patterns, keep } = dictionary();
+    const file = opts?.record === true && ctx?.stateDir ? path.join(ctx.stateDir, MISSING_FILE) : null;
     return texts.map((t) => {
       const out = translateText(t, entries, patterns);
-      const core = t.trim();
-      if (record && out === t && looksLikeUiText(core, keepEnglish)) recorder.record(core);
+      if (file !== null && out === t && looksLikeUiText(t.trim(), keep)) recorder.record(file, t.trim());
       return out;
     });
   }

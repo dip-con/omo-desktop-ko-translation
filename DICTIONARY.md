@@ -1,69 +1,54 @@
-# 한글 사전
+# 사전 다루기
 
-한글 모드는 `mods/ko/ko.json`으로 화면 글자를 바꿔요. 영어로 둘 문구는 `mods/ko/keep-english.json`, 자동 추출로 못 잡는 문구의 출처 기록은 `mods/ko/manual.json`에 있어요. 사전 라이선스는 [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md)를 보세요.
+사전은 `mods/ko/ko.json`이에요.
 
-## 새 한글 키는 이 저장소에서 추가
+- `entries`: 영어 문구 그대로를 키로, 한글을 값으로 둬요.
+- `patterns`: 문장 전체에 맞는 패턴이에요. `$1`..`$9`로 바뀌는 부분을 받아요.
+- `mods/ko/keep-english.json`의 `entries`: 번역하지 않을 문구와 그 이유예요.
 
-설치된 `~/.omo/app-mods/ko`를 직접 고치지 마세요. 업데이트할 때 덮어써져요. 순서는 이래요.
+## 빠진 문구 추가하기
 
-1. **앱을 쓰는 동안 모아져요.** ko 모드는 번역하지 못한 화면 문구를 `~/Library/Application Support/omo-app-mods/ko-missing.json`에 기록해요 (2초마다 한 번, 최대 5000개).
-2. **모으기:**
+설정 화면(`#/settings`)을 돌아다니면 번역이 없는 문구가 상태 폴더의 `ko-missing.json`에 쌓여요.
 
-   ```sh
+1. 모아요.
+
+   ```bash
    npm run collect
    ```
 
-   `ko-missing.json`에서 아직 처리 안 된 문구만 골라 `mods/ko/pending.json`에 많이 나온 순서로 적어요. 다른 파일을 읽으려면 `npm run collect -- --from <파일>`.
-3. **한글 추가:**
+   기록된 것 중 아직 사전에 없는 것만 많이 나온 순서로 `pending.json`에 써요. 옵션: `--from <ko-missing.json>`, `--out <file>`, `--dir <mod 폴더>`.
 
-   ```sh
-   npm run add-key -- "<영문>" "<한글>"
-   npm run add-key -- "<영문>" --keep-english "<이유>"   # 영어로 둘 때
+2. 추가해요.
+
+   ```bash
+   npm run add-key -- "Open settings" "설정 열기"
+   npm run add-key -- --file pairs.json
+   npm run add-key -- "GitHub" --keep-english "제품 이름"
    ```
 
-   `ko.json`에 항목을 붙이고 `manual.json`에 출처(`runtime`)를 남긴 뒤 `pending.json`에서 지워요. 메모는 `--note "<메모>"`. 이미 있는 키면 거부해요. 영문은 앞뒤 공백 없이 화면 글자 그대로 넣어요.
-4. **커밋:** `git commit`으로 이 저장소에 남겨요.
-5. **반영:** 설정 > 모드 > 업데이트에서 [업데이트 확인] → [업데이트 적용], 또는
+   `pairs.json`은 `{"영어": "한글"}` 묶음이에요. 키는 정렬된 위치에 들어가고 `pending.json`에서 빠져요. 이미 있는 키를 바꾸려면 `--replace`를 붙여요. `--pending`, `--dir`로 파일 위치를 바꿀 수 있어요.
 
-   ```sh
-   node ~/.omo/app-mods/_loader/update.mjs --mod ko
+3. 테스트하고 커밋, push 해요.
+
+   ```bash
+   npm test
+   git add mods/ko && git commit -m "ko: 문구 추가" && git push
    ```
 
-   그다음 [지금 새로 고침]을 누르거나 앱을 다시 열어요.
+4. 앱의 **설정 > 모드**에서 [업데이트 확인], [업데이트 적용], [지금 새로 고침]을 눌러요.
 
-## 사전 전체 검사 (macOS)
+## 앱에서 문구 뽑기 (extract / check)
 
-`strings.json`은 설치된 앱 빌드의 화면 문구 목록이라 빌드마다 달라서 배포하지 않아요. 내 컴퓨터에서 뽑아요.
-
-```sh
-node tools/extract-strings.mjs --out mods/ko/strings.json
-node tools/dictionary-check.mjs
+```bash
+npm run extract              # strings.json 생성 (--out, --app)
+npm run check                # 사전에 없는 문구 목록 (--strings, --dir)
+npm run check -- --strict    # 빠진 게 있으면 exit 1
 ```
 
-추출기는 `/Applications/OmO.app/Contents/Resources`를 읽기만 해요. `LOADER_DIR`(로더 체크아웃 폴더)를 설정하면 로더에 기록된 앱 위치와 지문 함수를 써요. 검사는 지문이 안 맞는 항목과 어느 사전에도 없는 문구를 알려 줘요. 깨끗하면 0, 문제가 있으면 1, `strings.json`이 없으면 2로 끝나요.
-
-### 추출기가 잡는 것
-
-클라이언트 파일의 문자열 중 이런 모양만 잡아요.
-
-- `children:` 바로 뒤의 문자열
-- `label:`, `title:`, `description:`, `placeholder:`, `tooltip:`, `"aria-label":` 뒤의 문자열
-- `"/settings/<name>":` 뒤의 문자열
-
-120자 넘는 것, 글자가 없는 것, `${`·URL·마크업이 든 것은 빼요. 나머지(실행 중 조립되는 문구 등)는 위의 런타임 수집과 `add-key`로 넣어요.
-
-## OmO 업데이트 뒤
-
-1. 앱을 실행해 써 보고 `npm run collect`로 새로 빠진 문구를 확인해요. 위 1~5단계로 채워요.
-2. 전체를 보려면 `extract-strings` → `dictionary-check`를 다시 돌려요.
-3. 화면별 커버리지: `node tools/coverage.mjs --out <폴더>`는 `fixtures/live`의 스냅숏으로 오프라인 측정해요. 스냅숏은 OmO를 종료한 뒤 `node tools/probe-app.mjs --out <폴더>`, `node tools/snapshot-app.mjs --ev <폴더> --snap fixtures/live --expect-version <버전>`, 다시 `probe-app` 순서로 만들어요. 이 두 도구는 앱을 직접 띄우는데, macOS판에서는 아직 실제로 돌려 보지 않았어요.
-
-빌드를 기록할 필요는 없어요. 모드가 붙을지는 앵커가 정해요.
-
-## 라이선스
-
-사전과 도구의 라이선스는 [LICENSES.md](LICENSES.md)를 보세요.
+`extract`는 OmO.app 클라이언트 파일 중 이름에 `settings`가 들어간 것과 메인 청크에서 화면 문구처럼 보이는 문자열을 뽑아요. `strings.json`과 `pending.json`은 git에 올리지 않아요.
 
 ## English
 
-New Korean keys are added in this repository: the ko mod logs untranslated UI text to `~/Library/Application Support/omo-app-mods/ko-missing.json`; `npm run collect` turns it into `mods/ko/pending.json`; `npm run add-key -- "<en>" "<ko>"` (or `--keep-english <reason>`) adds one; commit; then apply with Settings > 모드 > 업데이트 or `node ~/.omo/app-mods/_loader/update.mjs --mod ko`. Full check: `node tools/extract-strings.mjs --out mods/ko/strings.json` then `node tools/dictionary-check.mjs`.
+Dictionary lives in `mods/ko/ko.json` (`entries`, `patterns`) plus `keep-english.json`. Workflow: `npm run collect` ->
+`npm run add-key -- "<en>" "<ko>"` (or `--file`, `--keep-english`) -> `npm test`, commit, push -> update from Settings > 모드.
+Use `npm run extract` and `npm run check` to find uncovered strings in the app.

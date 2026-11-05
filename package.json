@@ -1,14 +1,16 @@
 {
-  "name": "omo-desktop-mod-ko",
+  "name": "omo-desktop-ko-translation",
   "private": true,
   "type": "module",
+  "license": "MIT",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
-    "test": "node --test --test-isolation=none --import ./test/helpers/temp-state.mjs test/*.test.mjs",
-    "test:local": "node --test --test-isolation=none --import ./test/helpers/temp-state.mjs test-local/*.test.mjs",
-    "collect": "node tools/collect-missing.mjs",
+    "test": "node --test test/",
+    "extract": "node tools/extract.mjs",
+    "check": "node tools/check.mjs",
+    "collect": "node tools/collect.mjs",
     "add-key": "node tools/add-key.mjs"
   }
 }

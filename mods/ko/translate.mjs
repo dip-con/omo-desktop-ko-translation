@@ -1,40 +1,32 @@
-// Pure text rule for the ko mod. An exact registered string wins. Otherwise the first pattern in object order that
-// matches the whole text supplies the translation, with $1..$9 taken from its capture groups (same semantics as
-// the ko dictionary checks). Leading and trailing whitespace is kept. Unregistered text, and text longer than
-// MAX_PATTERN_TEXT characters for patterns, comes back unchanged. An invalid pattern is skipped and reported by
-// invalidPatterns; it never throws.
+// Pure text rule: an exact entry wins; otherwise the first pattern (object order) that matches the whole text,
+// with $1..$9 from its capture groups. Surrounding whitespace is kept. Text longer than MAX_PATTERN_TEXT skips
+// patterns. Unknown text comes back unchanged. An invalid pattern is skipped (see invalidPatterns), never thrown.
 export const MAX_PATTERN_TEXT = 300;
 const compiled = new WeakMap();
 
 function compile(patterns) {
-  if (patterns === undefined || patterns === null) return { rules: [], invalid: [] };
   let c = compiled.get(patterns);
   if (c === undefined) {
-    const rules = [];
-    const invalid = [];
+    c = { rules: [], invalid: [] };
     for (const [source, tpl] of Object.entries(patterns)) {
       try {
-        rules.push({ rx: new RegExp(source), tpl });
+        c.rules.push({ rx: new RegExp(source), tpl });
       } catch {
-        invalid.push(source);
+        c.invalid.push(source);
       }
     }
-    c = { rules, invalid };
     compiled.set(patterns, c);
   }
   return c;
 }
 
-export function invalidPatterns(patterns) {
-  return [...compile(patterns).invalid];
-}
+export const invalidPatterns = (patterns = {}) => [...compile(patterns).invalid];
 
-export function translateText(text, entries, patterns) {
+export function translateText(text, entries, patterns = {}) {
   const lead = /^\s*/.exec(text)[0];
-  const rest = text.slice(lead.length);
-  const core = rest.trimEnd();
+  const core = text.slice(lead.length).trimEnd();
   if (core === '') return text;
-  const trail = rest.slice(core.length);
+  const trail = text.slice(lead.length + core.length);
   if (Object.hasOwn(entries, core)) return lead + entries[core] + trail;
   if (core.length > MAX_PATTERN_TEXT) return text;
   for (const { rx, tpl } of compile(patterns).rules) {

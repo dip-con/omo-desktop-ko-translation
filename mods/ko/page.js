@@ -1,49 +1,38 @@
-// ko mod page. The loader runs this file as the body of function (omoMods) { ... } in the isolated world.
-// It changes the nodeValue of text nodes and the value of aria-label/title/placeholder only. It never wraps or
-// replaces a node, so React-managed text keeps its node. Translations come from host.mjs (method translate).
+// ko mod page script. The loader runs this file as the body of function (omoMods) { ... } in the isolated world.
+// It only changes the nodeValue of text nodes and the aria-label/title/placeholder attributes; it never wraps or
+// replaces a node, so React keeps its nodes. Translations come from host.mjs. Untranslated text is recorded only
+// on the settings screens (#/settings...): chat content is not dictionary material.
 var FLIP_LIMIT = 3;
 var FLIP_WINDOW_MS = 1000;
 var BATCH_MAX = 500;
 var ATTRS = ['aria-label', 'title', 'placeholder'];
-var ATTR_SELECTOR = '[aria-label], [title], [placeholder]';
 var exclusion = null;
 var queue = [];
 var scheduled = false;
-var inflight = 0;
 var states = new WeakMap();
 
 function stateOf(node, attr) {
   var byKey = states.get(node);
-  if (!byKey) {
-    byKey = new Map();
-    states.set(node, byKey);
-  }
-  var key = attr || '';
-  var s = byKey.get(key);
-  if (!s) {
-    s = { origin: null, written: null, flips: [], stopped: false, queued: false };
-    byKey.set(key, s);
-  }
+  if (!byKey) states.set(node, (byKey = new Map()));
+  var s = byKey.get(attr || '');
+  if (!s) byKey.set(attr || '', (s = { origin: null, written: null, flips: [], stopped: false, queued: false }));
   return s;
 }
-function currentValue(node, attr) {
+function read(node, attr) {
   return attr ? node.getAttribute(attr) : node.nodeValue;
 }
-function writeValue(node, attr, value) {
+function write(node, attr, value) {
   if (attr) node.setAttribute(attr, value);
   else node.nodeValue = value;
 }
 function excluded(node, attr) {
-  if (attr) {
-    var el = node;
-    // Inputs and textareas are excluded only when an ancestor is in a zone; their own placeholder is a target.
-    if (el.matches('input, textarea')) return el.parentElement !== null && el.parentElement.closest(exclusion) !== null;
-    return el.closest(exclusion) !== null;
-  }
-  return node.parentElement === null || node.parentElement.closest(exclusion) !== null;
+  if (!attr) return node.parentElement === null || node.parentElement.closest(exclusion) !== null;
+  // An input's own placeholder is translated; only an excluded ancestor stops it.
+  if (node.matches('input, textarea')) return node.parentElement !== null && node.parentElement.closest(exclusion) !== null;
+  return node.closest(exclusion) !== null;
 }
-// True once the node has flipped back to English more than FLIP_LIMIT times within FLIP_WINDOW_MS.
-function registerFlip(s, node, attr) {
+// React writing the English back more than FLIP_LIMIT times within FLIP_WINDOW_MS stops this node for good.
+function flipped(s, attr) {
   var now = Date.now();
   s.flips = s.flips.filter(function (t) { return now - t <= FLIP_WINDOW_MS; });
   s.flips.push(now);
@@ -55,13 +44,10 @@ function registerFlip(s, node, attr) {
 }
 function consider(node, attr) {
   var s = stateOf(node, attr);
-  if (s.stopped) return;
-  var value = currentValue(node, attr);
-  if (value === null || value.trim() === '') return;
-  if (value === s.written) return;
+  var value = read(node, attr);
+  if (s.stopped || s.queued || value === null || value.trim() === '' || value === s.written) return;
   if (excluded(node, attr)) return;
-  if (s.origin !== null && value === s.origin && registerFlip(s, node, attr)) return;
-  if (s.queued) return;
+  if (s.origin !== null && value === s.origin && flipped(s, attr)) return;
   s.queued = true;
   queue.push({ node: node, attr: attr, state: s });
   schedule();
@@ -69,16 +55,12 @@ function consider(node, attr) {
 function visit(root) {
   if (root.nodeType === Node.TEXT_NODE) return consider(root, null);
   if (root.nodeType !== Node.ELEMENT_NODE) return;
-  var attrHolders = root.querySelectorAll(ATTR_SELECTOR);
-  var all = [root].concat(Array.prototype.slice.call(attrHolders));
-  all.forEach(function (el) {
+  var holders = [root].concat(Array.prototype.slice.call(root.querySelectorAll('[aria-label], [title], [placeholder]')));
+  holders.forEach(function (el) {
     ATTRS.forEach(function (a) { if (el.hasAttribute(a)) consider(el, a); });
   });
   var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (var n = walker.nextNode(); n; n = walker.nextNode()) consider(n, null);
-}
-function settle() {
-  if (inflight === 0 && queue.length === 0 && !scheduled) performance.mark('ko:idle');
 }
 function schedule() {
   if (scheduled) return;
@@ -89,49 +71,36 @@ function sendBatch() {
   scheduled = false;
   var items = queue.splice(0, BATCH_MAX);
   if (queue.length > 0) schedule();
-  if (items.length === 0) return settle();
-  var sent = items.map(function (item) { return currentValue(item.node, item.attr); });
-  inflight += 1;
-  // Untranslated text is collected only on the settings screens; chat content is not dictionary material.
+  if (items.length === 0) return;
+  var sent = items.map(function (item) { return read(item.node, item.attr); });
   var record = location.hash.indexOf('#/settings') === 0;
   omoMods.call('translate', [sent, { record: record }]).then(
-    function (out) { applyBatch(items, sent, out); },
+    function (out) { requestIdleCallback(function () { apply(items, sent, out); }, { timeout: 250 }); },
     function (err) {
-      inflight -= 1;
       items.forEach(function (item) { item.state.queued = false; });
       console.error('ko mod: translate failed: ' + err.message);
-      settle();
     },
   );
 }
-function applyBatch(items, sent, out) {
-  requestIdleCallback(function () {
-    performance.mark('ko:start');
-    items.forEach(function (item, i) {
-      var s = item.state;
-      s.queued = false;
-      if (s.stopped) return;
-      var current = currentValue(item.node, item.attr);
-      if (current !== sent[i]) return consider(item.node, item.attr);
-      if (out[i] === current) return;
-      s.origin = current;
-      writeValue(item.node, item.attr, out[i]);
-      s.written = out[i];
-    });
-    performance.mark('ko:end');
-    performance.measure('ko:batch', 'ko:start', 'ko:end');
-    performance.clearMarks('ko:start');
-    performance.clearMarks('ko:end');
-    inflight -= 1;
-    settle();
-  }, { timeout: 250 });
+function apply(items, sent, out) {
+  items.forEach(function (item, i) {
+    var s = item.state;
+    s.queued = false;
+    if (s.stopped) return;
+    var current = read(item.node, item.attr);
+    if (current !== sent[i]) return consider(item.node, item.attr);
+    if (out[i] === current) return;
+    s.origin = current;
+    write(item.node, item.attr, out[i]);
+    s.written = out[i];
+  });
 }
 
 var observer = new MutationObserver(function (records) {
   records.forEach(function (r) {
     if (r.type === 'childList') r.addedNodes.forEach(visit);
     else if (r.type === 'characterData') consider(r.target, null);
-    else if (r.type === 'attributes') consider(r.target, r.attributeName);
+    else consider(r.target, r.attributeName);
   });
 });
 
@@ -142,7 +111,6 @@ omoMods.call('config', []).then(
     observer.observe(document.documentElement, {
       childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS,
     });
-    settle();
   },
   function (err) { console.error('ko mod: config failed: ' + err.message); },
 );

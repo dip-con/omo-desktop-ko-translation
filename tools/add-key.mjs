@@ -1,57 +1,56 @@
-// Registers one string found at runtime: a Korean translation in mods/ko/ko.json (with its provenance in
-// manual.json as {ko, source: "runtime", note}), or a keep-english.json entry with --keep-english. The string is
-// then removed from pending.json. ko.json entries stay plain strings: the runtime reads them directly.
-// Usage: node tools/add-key.mjs "<english>" "<korean>" [--note <text>] [--dir <mods/ko folder>]
-//        node tools/add-key.mjs "<english>" --keep-english <reason> [--dir <mods/ko folder>]
-import { isEntry } from './is-entry.mjs';
+// Adds translations to mods/ko/ko.json (keys kept sorted) or a keep-english.json entry, then drops those strings
+// from pending.json. Usage:
+//   node tools/add-key.mjs "<english>" "<korean>"
+//   node tools/add-key.mjs --file pairs.json            ({"<english>": "<korean>", ...})
+//   node tools/add-key.mjs "<english>" --keep-english "<reason>"
+//   common options: [--dir mods/ko] [--pending pending.json] [--replace]
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { pathToFileURL } from 'node:url';
-import { DEFAULT_MOD_DIR, modFiles, readJson, writeJson } from './dictionary-files.mjs';
-
-export const DEFAULT_NOTE = 'added from a runtime miss (tools/add-key.mjs)';
+import { MOD_DIR, PENDING_FILE, isEntry, readJson, writeJson } from './common.mjs';
 
 export class AddKeyError extends Error {}
 
-// Applies one request to the dictionary files under modDir. Returns { kind: 'ko' | 'keep-english', text }.
-export function addKey({ modDir, english, korean, note, keepEnglish }) {
-  const text = english ?? '';
-  if (text.trim() === '' || text !== text.trim()) throw new AddKeyError('the English text must be non-empty with no leading or trailing spaces');
-  const files = modFiles(modDir);
-  const ko = readJson(files.ko);
-  const keep = readJson(files.keep);
-  if (Object.hasOwn(ko.entries, text)) throw new AddKeyError(`already in ko.json: ${JSON.stringify(text)} -> ${JSON.stringify(ko.entries[text])}`);
-  if (Object.hasOwn(keep.entries, text)) throw new AddKeyError(`already in keep-english.json: ${JSON.stringify(text)}`);
-  let kind;
-  if (keepEnglish !== undefined) {
-    if (korean !== undefined) throw new AddKeyError('give either a Korean text or --keep-english, not both');
-    if (keepEnglish.trim() === '') throw new AddKeyError('--keep-english needs a reason');
-    writeJson(files.keep, { ...keep, entries: { ...keep.entries, [text]: keepEnglish } });
-    kind = 'keep-english';
-  } else {
-    if (korean === undefined || korean.trim() === '') throw new AddKeyError('a Korean text is required (or --keep-english <reason>)');
-    const manual = readJson(files.manual);
-    writeJson(files.ko, { ...ko, entries: { ...ko.entries, [text]: korean } });
-    writeJson(files.manual, { ...manual, entries: { ...manual.entries, [text]: { ko: korean, source: 'runtime', note: note ?? DEFAULT_NOTE } } });
-    kind = 'ko';
+const sorted = (o) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
+
+// pairs: [[english, value]]. kind 'ko' writes ko.json entries, 'keep' writes keep-english.json reasons.
+// An existing key is refused unless replace is set. Returns the English texts written.
+export function addKeys({ modDir = MOD_DIR, pendingFile = PENDING_FILE, pairs, kind = 'ko', replace = false }) {
+  const koFile = path.join(modDir, 'ko.json');
+  const keepFile = path.join(modDir, 'keep-english.json');
+  const ko = readJson(koFile);
+  const keep = readJson(keepFile);
+  for (const [en, value] of pairs) {
+    if (typeof en !== 'string' || en.trim() === '' || en !== en.trim()) throw new AddKeyError(`English text must be non-empty with no outer spaces: ${JSON.stringify(en)}`);
+    if (typeof value !== 'string' || value.trim() === '') throw new AddKeyError(`missing ${kind === 'ko' ? 'Korean text' : 'reason'} for ${JSON.stringify(en)}`);
+    if (!replace && (Object.hasOwn(ko.entries, en) || Object.hasOwn(keep.entries, en))) throw new AddKeyError(`already registered: ${JSON.stringify(en)}`);
   }
-  if (fs.existsSync(files.pending)) {
-    const pending = readJson(files.pending);
-    writeJson(files.pending, { ...pending, strings: pending.strings.filter((p) => p.text !== text) });
+  const target = kind === 'ko' ? ko : keep;
+  target.entries = sorted({ ...target.entries, ...Object.fromEntries(pairs) });
+  writeJson(kind === 'ko' ? koFile : keepFile, target);
+  const texts = pairs.map(([en]) => en);
+  if (fs.existsSync(pendingFile)) {
+    const pending = readJson(pendingFile);
+    writeJson(pendingFile, { ...pending, strings: pending.strings.filter((p) => !texts.includes(p.text)) });
   }
-  return { kind, text };
+  return texts;
 }
 
 function main(argv) {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { note: { type: 'string' }, 'keep-english': { type: 'string' }, dir: { type: 'string' } },
+    options: { file: { type: 'string' }, 'keep-english': { type: 'string' }, dir: { type: 'string' }, pending: { type: 'string' }, replace: { type: 'boolean' } },
   });
+  const keepReason = values['keep-english'];
+  let pairs;
+  if (values.file !== undefined) pairs = Object.entries(readJson(values.file));
+  else if (keepReason !== undefined) pairs = [[positionals[0], keepReason]];
+  else pairs = [[positionals[0], positionals[1]]];
   try {
-    const result = addKey({ modDir: values.dir ?? DEFAULT_MOD_DIR, english: positionals[0], korean: positionals[1], note: values.note, keepEnglish: values['keep-english'] });
-    console.log(JSON.stringify(result));
+    const kind = keepReason === undefined ? 'ko' : 'keep';
+    const texts = addKeys({ modDir: values.dir, pendingFile: values.pending, pairs, kind, replace: values.replace });
+    console.log(JSON.stringify({ kind, added: texts.length }));
   } catch (e) {
     if (!(e instanceof AddKeyError)) throw e;
     console.error(`add-key: ${e.message}`);

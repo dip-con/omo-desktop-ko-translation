@@ -2,19 +2,24 @@
   "id": "ko",
   "name": "Korean UI",
   "nameKo": "한글 화면",
-  "descriptionKo": "앱 화면 글자를 한글로 바꿈",
-  "version": "0.2.0",
+  "description": "앱 화면 글자를 한글로 바꿔요",
+  "version": "0.3.0",
   "enabled": true,
+  "locked": false,
   "order": 20,
   "entry": {
     "page": "page.js",
     "host": "host.mjs"
   },
-  "contributes": {},
   "anchors": [
     {
       "selector": "#root",
       "route": "*"
     }
-  ]
+  ],
+  "source": {
+    "repo": "dip-con/omo-desktop-ko-translation",
+    "path": "mods/ko",
+    "ref": "main"
+  }
 }
