@@ -60,9 +60,9 @@ node tools/dictionary-check.mjs
 
 빌드를 기록할 필요는 없어요. 모드가 붙을지는 앵커가 정해요.
 
-## 원작
+## 라이선스
 
-이 사전과 도구는 grim-susemi의 [omo-desktop-ko-translation](https://github.com/grim-susemi/omo-desktop-ko-translation)(MIT)에서 왔어요. [LICENSES.md](LICENSES.md)도 함께 보세요.
+사전과 도구의 라이선스는 [LICENSES.md](LICENSES.md)를 보세요.
 
 ## English
 

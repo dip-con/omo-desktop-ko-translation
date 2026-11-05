@@ -7,10 +7,17 @@ OmO 데스크톱 앱의 화면 글자를 한글로 바꾸는 모드예요. 모�
 ## 설치 (macOS)
 
 1. Node.js 24 이상을 준비하고 로더 저장소와 이 저장소를 나란히 받아요.
+
+   ```sh
+   git clone https://github.com/dip-con/omo-desktop-mod
+   git clone https://github.com/dip-con/omo-desktop-ko-translation
+   ```
+
 2. 로더 저장소 폴더에서 이 저장소의 `mods/ko`를 넣어 설치해요.
 
    ```sh
-   node tools/install.mjs --mod <이 저장소>/mods/ko
+   cd omo-desktop-mod
+   node tools/install.mjs --mod ../omo-desktop-ko-translation/mods/ko
    ```
 
 3. OmO를 종료하고 `~/Applications/OmO Mods.app`(Spotlight에서 "OmO Mods")으로 실행해요.
@@ -25,10 +32,10 @@ OmO 데스크톱 앱의 화면 글자를 한글로 바꾸는 모드예요. 모�
 
 빠진 문구를 모으고 한글 키를 추가하는 방법은 [DICTIONARY.md](DICTIONARY.md)에 있어요. `npm test`는 단독 단위 테스트, `npm run test:local`은 로더 체크아웃(`LOADER_DIR`), Chrome, 설치된 앱이 필요한 로컬 통합 검사예요. 없는 조건은 건너뜀으로 표시돼요.
 
-## 원작
+## 라이선스
 
-grim-susemi의 [omo-desktop-ko-translation](https://github.com/grim-susemi/omo-desktop-ko-translation)(MIT)을 macOS용으로 옮긴 판이에요. 코드 라이선스는 [LICENSE](LICENSE), 사전 고지는 [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md)를 보세요.
+코드 라이선스는 [LICENSE](LICENSE)(MIT), 사전 고지는 [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md)를 보세요. 로더는 [dip-con/omo-desktop-mod](https://github.com/dip-con/omo-desktop-mod)에 있어요.
 
 ## English
 
-Korean UI mod for OmO desktop (macOS edition of grim-susemi's MIT project). It needs the mod loader: from the loader checkout run `node tools/install.mjs --mod <this repo>/mods/ko`, quit OmO, then open `~/Applications/OmO Mods.app`. Read [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md) and [LICENSES.md](LICENSES.md) before redistributing. See [DICTIONARY.md](DICTIONARY.md) for adding translations.
+Korean UI mod for OmO desktop on macOS (MIT). It needs the mod loader ([dip-con/omo-desktop-mod](https://github.com/dip-con/omo-desktop-mod)): from the loader checkout run `node tools/install.mjs --mod <this repo>/mods/ko`, quit OmO, then open `~/Applications/OmO Mods.app`. Read [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md) and [LICENSES.md](LICENSES.md) before redistributing. See [DICTIONARY.md](DICTIONARY.md) for adding translations.
