@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_DIR } from '../tools/extract-strings.mjs';
+import { RESOURCES_DIR } from '../tools/extract-strings.mjs';
 
 // The dictionary is built from the installed client on this PC, so these checks read mods/ko directly.
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -122,25 +122,26 @@ describe('dictionary files', () => {
     assert.deepEqual(errors, []);
   });
 
-  it('manual sources still hold their string in the installed bundle; runtime-assembled entries are skipped', { skip: APP_DIR ? false : 'LOADER_DIR not set or invalid; app-dependent assertion skipped' }, (t) => {
+  it('manual sources still hold their string in the installed bundle; runtime-assembled entries are skipped', { skip: fs.existsSync(RESOURCES_DIR) ? false : `installed app not found at ${RESOURCES_DIR}; app-dependent assertion skipped` }, (t) => {
     const forms = (s) => [...new Set([s, JSON.stringify(s).slice(1, -1), s.replace(/'/g, "\\'"), [...s].map((c) => (c.charCodeAt(0) > 127 ? `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}` : c)).join('')])];
     const holds = (buf, s) => forms(s).some((f) => buf.indexOf(Buffer.from(f, 'utf8')) >= 0);
-    assert.ok(fs.existsSync(APP_DIR), `installed app not found at ${APP_DIR}`);
+    // manual.json sources are relative to the app's resources folder, written as "resources/...".
+    const inResources = (source) => path.join(RESOURCES_DIR, source.replace(/^resources\//, ''));
     let bundleFiles = null;
     const listBundle = () => {
-      const out = [path.join(APP_DIR, 'resources/app.asar')];
+      const out = [path.join(RESOURCES_DIR, 'app.asar')];
       const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else out.push(p); } };
-      walk(path.join(APP_DIR, 'resources/omo-server'));
+      walk(path.join(RESOURCES_DIR, 'omo-server'));
       return out;
     };
     const stale = [];
     for (const [k, m] of Object.entries(manual.entries)) {
-      if (m.source === 'runtime-assembled') { t.diagnostic(`skipped runtime-assembled: ${JSON.stringify(k.slice(0, 60))} (${m.note})`); continue; }
-      const file = path.join(APP_DIR, m.source);
+      if (m.source === 'runtime-assembled' || m.source === 'runtime') { t.diagnostic(`skipped runtime-assembled: ${JSON.stringify(k.slice(0, 60))} (${m.note})`); continue; }
+      const file = inResources(m.source);
       if (fs.existsSync(file) && holds(fs.readFileSync(file), k)) continue;
       bundleFiles ??= listBundle();
       const elsewhere = bundleFiles.find((f) => holds(fs.readFileSync(f), k));
-      stale.push(`${JSON.stringify(k.slice(0, 60))}: ${elsewhere ? `moved to ${path.relative(APP_DIR, elsewhere)}` : 'not found anywhere in the installed bundle'} (recorded source: ${m.source})`);
+      stale.push(`${JSON.stringify(k.slice(0, 60))}: ${elsewhere ? `moved to ${path.relative(RESOURCES_DIR, elsewhere)}` : 'not found anywhere in the installed bundle'} (recorded source: ${m.source})`);
     }
     assert.deepEqual(stale, []);
   });

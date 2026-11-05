@@ -6,7 +6,7 @@ import { importLoader } from './loader-import.mjs';
 import { spawn } from 'node:child_process';
 const pickLoopbackPort = async (...args) => (await importLoader('launch.mjs')).pickLoopbackPort(...args);
 
-export const CHROME = process.env.OMO_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+export const CHROME = process.env.OMO_CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 export const CHROME_WAIT_MS = 20000;
 
 export function chromeArgs(profile, port) {
@@ -19,7 +19,7 @@ export function chromeArgs(profile, port) {
 // Starts Chrome with a temp profile on a picked loopback port; resolves the browser websocket URL once Chrome publishes its endpoint.
 export async function launchChrome(profile, { pick = pickLoopbackPort, spawnChrome = spawn } = {}) {
   const port = await pick();
-  const proc = spawnChrome(CHROME, chromeArgs(profile, port), { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
+  const proc = spawnChrome(CHROME, chromeArgs(profile, port), { stdio: ['ignore', 'ignore', 'pipe'] });
   const wsUrl = new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Chrome did not publish a DevTools endpoint')), CHROME_WAIT_MS);
     let buf = '';
@@ -36,7 +36,7 @@ export async function launchChrome(profile, { pick = pickLoopbackPort, spawnChro
   return { proc, wsUrl };
 }
 
-// Removes a test's temp dir. Windows can hold the Chrome profile for a moment after the kill, so a failed removal is ignored.
+// Removes a test's temp dir. Chrome can still hold the profile for a moment after the kill, so a failed removal is ignored.
 export function removeTempDir(dir) {
   try {
     fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });

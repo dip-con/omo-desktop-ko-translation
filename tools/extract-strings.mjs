@@ -1,14 +1,16 @@
-// Extracts UI string literals from the installed OmO client bundle. Read only: APP_DIR is never written.
+// Extracts UI string literals from the installed OmO client bundle. Read only: the app is never written.
 // Usage: node tools/extract-strings.mjs --out mods/ko/strings.json
+import { isEntry } from './is-entry.mjs';
 import fs from 'node:fs';
 import { importLoader } from './loader-import.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { hasLoader, loaderDir } from './loader-dir.mjs';
-const readConfigAppExe = hasLoader() ? (await importLoader('deps.mjs')).readConfigAppExe : null;
+import { hasLoader } from './loader-dir.mjs';
+import { resolveApp, runtimeDirOf } from './app-paths.mjs';
 
-export const APP_DIR = readConfigAppExe ? path.dirname(readConfigAppExe()) : null;
+// The app bundle and its Resources folder (tools/app-paths.mjs owns the rule).
+export const { bundle: APP_BUNDLE, resources: RESOURCES_DIR } = await resolveApp();
 
 const sha256File = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 
@@ -33,16 +35,33 @@ function readAsarEntry(asarPath, inner) {
   }
 }
 
-// Same four-part fingerprint as docs/app-facts.json (copied: probe-app.mjs is a script, not a module).
-export function readFingerprint(appDir) {
-  const pkg = JSON.parse(readAsarEntry(`${appDir}/resources/app.asar`, 'package.json').toString('utf8'));
-  const bm = JSON.parse(fs.readFileSync(`${appDir}/resources/omo-runtime/win32-x64/bundle-manifest.json`, 'utf8'));
+// The value of read(), or null when its file is missing or unreadable.
+function orNull(read) {
+  try {
+    return read();
+  } catch {
+    return null;
+  }
+}
+
+// Same four-part fingerprint as the loader's loader/fingerprint.mjs, for runs without LOADER_DIR. Takes the app bundle
+// path; never throws: a part whose file is missing or unreadable is null.
+export function readFingerprint(bundle) {
+  const resources = path.join(bundle, 'Contents', 'Resources');
+  const runtime = runtimeDirOf(resources);
+  const pkg = orNull(() => JSON.parse(readAsarEntry(path.join(resources, 'app.asar'), 'package.json').toString('utf8')));
+  const bm = runtime === null ? null : orNull(() => JSON.parse(fs.readFileSync(path.join(runtime, 'bundle-manifest.json'), 'utf8')));
   return {
-    appVersion: pkg.version,
-    client: sha256File(`${appDir}/resources/omo-server/client/index.html`),
-    runtime: { omoRef: bm.omoRef, omoSha: bm.resolvedShas && bm.resolvedShas.omo },
-    plugin: sha256File(`${appDir}/resources/omo-runtime/win32-x64/plugin/extensions/omo.js`),
+    appVersion: pkg?.version ?? null,
+    client: orNull(() => sha256File(path.join(resources, 'omo-server', 'client', 'index.html'))),
+    runtime: { omoRef: bm?.omoRef ?? null, omoSha: bm?.resolvedShas?.omo ?? null },
+    plugin: runtime === null ? null : orNull(() => sha256File(path.join(runtime, 'plugin', 'extensions', 'omo.js'))),
   };
+}
+
+// The loader's readFingerprint when LOADER_DIR is set, else the local copy above.
+async function fingerprintOf(bundle) {
+  return hasLoader() ? (await importLoader('fingerprint.mjs')).readFingerprint(bundle) : readFingerprint(bundle);
 }
 
 // Literal sources: `...` (group 1) or "..." (group 2), escapes allowed, no raw newline.
@@ -99,21 +118,20 @@ export function templateCandidates(texts) {
   return [...found].sort();
 }
 
-function main(argv) {
+async function main(argv) {
   const i = argv.indexOf('--out');
   if (i < 0 || !argv[i + 1]) {
     console.error('usage: node tools/extract-strings.mjs --out <file>');
     process.exit(2);
   }
-  if (!APP_DIR) loaderDir();
   const out = argv[i + 1];
-  const assets = path.join(APP_DIR, 'resources/omo-server/client/assets');
+  const assets = path.join(RESOURCES_DIR, 'omo-server', 'client', 'assets');
   const files = fs.readdirSync(assets).filter((f) => f.endsWith('.js')).sort();
   const texts = files.map((f) => fs.readFileSync(path.join(assets, f), 'utf8'));
   const extras = fs.existsSync(EXTRAS_PATH) ? JSON.parse(fs.readFileSync(EXTRAS_PATH, 'utf8')).strings : [];
   const strings = mergeExtras(extractStrings(texts), extras);
   const doc = {
-    fingerprint: readFingerprint(APP_DIR),
+    fingerprint: await fingerprintOf(APP_BUNDLE),
     extractedAt: new Date().toISOString(),
     count: strings.length,
     strings,
@@ -123,6 +141,6 @@ function main(argv) {
   console.log(`extracted ${strings.length} strings from ${files.length} files -> ${out}`);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  main(process.argv.slice(2));
+if (isEntry(import.meta.url)) {
+  await main(process.argv.slice(2));
 }

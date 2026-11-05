@@ -1,30 +1,34 @@
-# Korean UI mod
+# 한글 화면 모드 (macOS)
 
-**This mod does not work on its own.** Install the loader platform first: https://github.com/grim-susemi/omo-desktop-mod-loader
+OmO 데스크톱 앱의 화면 글자를 한글로 바꾸는 모드예요. 모델 이름이나 기술 용어처럼 영어가 나은 것은 그대로 둬요. **혼자서는 동작하지 않아요.** 모드 로더를 함께 설치해야 해요.
 
-This optional mod translates supported OmO interface text into Korean while leaving selected names and technical terms in English.
+**앱 문구 라이선스 안내:** 사전에는 앱 화면에서 가져온 문구가 들어 있어요. 쓰거나 다시 배포하기 전에 [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md)와 [LICENSES.md](LICENSES.md)를 읽어 주세요.
 
-**App-text licence notice:** the dictionary includes text derived from the application's interface. Read [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md) and [LICENSES.md](LICENSES.md) before using or redistributing it.
+## 설치 (macOS)
 
-## Install
-
-1. Install the loader platform using the instructions at https://github.com/grim-susemi/omo-desktop-mod-loader
-2. From the loader checkout, add this mod (replace the path with this checkout's `mods/ko` folder):
+1. Node.js 24 이상을 준비하고 로더 저장소와 이 저장소를 나란히 받아요.
+2. 로더 저장소 폴더에서 이 저장소의 `mods/ko`를 넣어 설치해요.
 
    ```sh
-   node tools/install.mjs --mod <path-to-this-checkout>/mods/ko
+   node tools/install.mjs --mod <이 저장소>/mods/ko
    ```
 
-Use the **Settings > 모드** switch to turn it off. To uninstall only this mod, rerun the loader's installer without its `--mod` argument; include `--mod` for every other external mod you want to keep. The installer removes files omitted from its new install plan. See the loader repository's installation instructions (https://github.com/grim-susemi/omo-desktop-mod-loader).
+3. OmO를 종료하고 `~/Applications/OmO Mods.app`(Spotlight에서 "OmO Mods")으로 실행해요.
 
-## Coverage
+자세한 순서는 로더 저장소의 `INSTALL.ko.md`에 있어요. 끄려면 설정 > 모드의 스위치를 써요. 이 모드만 빼려면 이 `--mod` 없이 로더 설치를 다시 실행하세요(남길 다른 외부 모드의 `--mod`는 넣어야 해요).
 
-The measured gated untranslated ratios on OmO 2026.1102.3, 2026-11-04, were: home 0.0%, settings/models 2.7%, settings/tools 2.2%, settings/general 1.3%, settings/diagnostics 1.1%, and every other settings screen 0.0%.
+## 업데이트
 
-## Development
+이 저장소에 새 번역이 들어오면 설정 > 모드 > 업데이트에서 [업데이트 확인] → [업데이트 적용]을 누르거나, 터미널에서 `node ~/.omo/app-mods/_loader/update.mjs --pull --mod ko`를 실행해요.
 
-Run `npm test` for the standalone unit suite. `npm run test:local` runs local integration checks, which need a loader checkout, Chrome, and, for app-dependent checks, an installed app and generated inputs. Set `LOADER_DIR` to the loader checkout root containing `loader/cdp.mjs`. Missing prerequisites are reported as skips where supported. See [DICTIONARY.md](DICTIONARY.md) for extraction and maintenance.
+## 번역 추가와 개발
 
-## 한국어 요약
+빠진 문구를 모으고 한글 키를 추가하는 방법은 [DICTIONARY.md](DICTIONARY.md)에 있어요. `npm test`는 단독 단위 테스트, `npm run test:local`은 로더 체크아웃(`LOADER_DIR`), Chrome, 설치된 앱이 필요한 로컬 통합 검사예요. 없는 조건은 건너뜀으로 표시돼요.
 
-이 모드는 OmO 데스크톱 앱의 화면을 한국어로 바꾸며 단독으로 실행되지 않습니다. 로더를 먼저 설치한 뒤 이 모드를 추가하세요. 설정 > 모드에서 끌 수 있습니다. 앱 화면 문구의 사용 및 배포 조건은 위 라이선스 고지를 확인하세요.
+## 원작
+
+grim-susemi의 [omo-desktop-ko-translation](https://github.com/grim-susemi/omo-desktop-ko-translation)(MIT)을 macOS용으로 옮긴 판이에요. 코드 라이선스는 [LICENSE](LICENSE), 사전 고지는 [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md)를 보세요.
+
+## English
+
+Korean UI mod for OmO desktop (macOS edition of grim-susemi's MIT project). It needs the mod loader: from the loader checkout run `node tools/install.mjs --mod <this repo>/mods/ko`, quit OmO, then open `~/Applications/OmO Mods.app`. Read [KO-DICTIONARY-NOTICE.md](KO-DICTIONARY-NOTICE.md) and [LICENSES.md](LICENSES.md) before redistributing. See [DICTIONARY.md](DICTIONARY.md) for adding translations.

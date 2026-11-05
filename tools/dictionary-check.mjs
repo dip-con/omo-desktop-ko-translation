@@ -2,6 +2,7 @@
 // Checks the ko dictionary against the extracted strings: every dictionary fingerprint must match strings.json, and every
 // extracted string must be a key of ko.json or keep-english.json. Exits 1 on any mismatch or gap.
 // Usage: node tools/dictionary-check.mjs [--dir <folder holding strings.json, ko.json, keep-english.json>]
+import { isEntry } from './is-entry.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +20,7 @@ export function checkDictionary({ strings, ko, keep }) {
   return { mismatches, missing };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isEntry(import.meta.url)) {
   const dirIx = process.argv.indexOf('--dir');
   const dir = dirIx >= 0 ? path.resolve(process.argv[dirIx + 1]) : DEFAULT_DIR;
   const FILES = ['strings.json', 'ko.json', 'keep-english.json'];

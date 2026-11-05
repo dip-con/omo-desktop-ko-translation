@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { translateText } from './translate.mjs';
+import { createRecorder, looksLikeUiText } from './missing.mjs';
 
 // FACTS exclusionSelectors plus the mod's own zones. Text and attributes inside these are never changed.
 // Key chips: every key cap is a kbd with data-slot="kbd". Key names are not copy, so the translator never changes them.
@@ -13,16 +14,24 @@ export const EXCLUSION_SELECTORS = [
   '[data-diff]', '.xterm', '[data-omo-mod]', ...KEY_CHIP_SELECTORS,
 ];
 const MAX_BATCH = 500;
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const recorder = createRecorder();
 let dict = null;
 
 // ko.json holds the exact entries and the runtime patterns; both reach the page only through translate below.
+// keep-english.json lists text that stays English on purpose, so it is never recorded as missing.
 function dictionary() {
   if (dict === null) {
-    const file = path.join(path.dirname(fileURLToPath(import.meta.url)), 'ko.json');
-    const ko = JSON.parse(fs.readFileSync(file, 'utf8'));
-    dict = { entries: ko.entries, patterns: ko.patterns ?? {} };
+    const ko = JSON.parse(fs.readFileSync(path.join(HERE, 'ko.json'), 'utf8'));
+    const keep = JSON.parse(fs.readFileSync(path.join(HERE, 'keep-english.json'), 'utf8'));
+    dict = { entries: ko.entries, patterns: ko.patterns ?? {}, keepEnglish: new Set(Object.keys(keep.entries)) };
   }
   return dict;
+}
+
+// Writes the recorded misses now instead of at the next batch tick.
+export function flushMissing() {
+  recorder.flush();
 }
 
 // Bridge entry point: method and args are the values page.js sent through omoMods.call.
@@ -33,8 +42,13 @@ export function handle(method, args) {
     if (!Array.isArray(texts) || texts.length > MAX_BATCH || !texts.every((t) => typeof t === 'string')) {
       throw new Error('translate takes one array of at most 500 strings');
     }
-    const { entries, patterns } = dictionary();
-    return texts.map((t) => translateText(t, entries, patterns));
+    const { entries, patterns, keepEnglish } = dictionary();
+    return texts.map((t) => {
+      const out = translateText(t, entries, patterns);
+      const core = t.trim();
+      if (out === t && looksLikeUiText(core, keepEnglish)) recorder.record(core);
+      return out;
+    });
   }
   throw new Error(`unknown method ${method}`);
 }

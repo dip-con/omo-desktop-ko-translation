@@ -12,6 +12,7 @@
 // Usage: node tools/coverage.mjs --out <dir> [--captures <dir>]
 // Exit 1 when a screen's gated ratio leaves more than 5% of its nodes in English, a settings screen is under 95%
 // gated-translated, or a page script throws.
+import { isEntry } from './is-entry.mjs';
 import fs from 'node:fs';
 import { importLoader } from './loader-import.mjs';
 import http from 'node:http';
@@ -761,7 +762,7 @@ async function main() {
   process.exitCode = failures.length === 0 ? 0 : 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (isEntry(import.meta.url)) {
   main().catch((err) => {
     console.error(err.message);
     process.exitCode = 1;

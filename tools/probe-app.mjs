@@ -4,7 +4,8 @@
 // checks that the port refuses connections. Only the PIDs this script started are ever closed.
 //
 // Usage: node tools/probe-app.mjs --out <dir> [--negative]
-import { spawn, execFileSync } from 'node:child_process';
+import { isEntry } from './is-entry.mjs';
+import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { importLoader } from './loader-import.mjs';
@@ -12,6 +13,8 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveApp, runtimeDirOf } from './app-paths.mjs';
+import { listProcesses } from './processes.mjs';
 const { connect } = await importLoader('cdp.mjs');
 const { spawnQaApp, describeQaEnv } = await importLoader('qa-env.mjs');
 const { buildAnchors, sectionStamp, assembleExclusions, buildCardStyle, snapshotFacts } = await importLoader('app-facts.mjs');
@@ -30,12 +33,11 @@ const {
   choosePort,
   classifyProbeResults,
 } = await importLoader('stop-select.mjs');
-const { readConfigAppExe } = await importLoader('deps.mjs');
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
-const APP_DIR = path.dirname(readConfigAppExe());
-const APP_EXE = `${APP_DIR}/OmO.exe`;
+// APP_DIR is the app bundle: every OmO process runs an executable inside it.
+const { bundle: APP_DIR, resources: RESOURCES, exe: APP_EXE } = await resolveApp();
 const PLANNING_BUILD = '2026.1024.2';
 const SETTINGS_PATHS_MIN = 5;
 
@@ -79,28 +81,9 @@ async function pollUntil(label, fn, timeoutMs = 60000) {
 }
 
 // ---------- process helpers (identity by ExecutablePath; never by image name) ----------
-function psJsonArray(script) {
-  const out = execFileSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
-    encoding: 'utf8',
-    timeout: 60000,
-  });
-  if (!out.trim()) return [];
-  const v = JSON.parse(out);
-  return Array.isArray(v) ? v : [v];
-}
-
-// One query per call: pid, parent pid, executable, command line, creation time (ms, UTC).
+// One query per call: pid, parent pid, executable, command line, creation time (ms).
 function queryProcesses() {
-  const rows = psJsonArray(
-    "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine,@{n='Created';e={ if ($_.CreationDate) { $_.CreationDate.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ') } }} | ConvertTo-Json -Compress",
-  );
-  return rows.map((p) => ({
-    pid: p.ProcessId,
-    ppid: p.ParentProcessId,
-    exePath: p.ExecutablePath ?? '',
-    commandLine: p.CommandLine ?? '',
-    createdMs: Date.parse(p.Created),
-  }));
+  return listProcesses();
 }
 
 // One TCP probe: 'refused', 'open', 'timeout' or 'error:<code>'.
@@ -144,11 +127,7 @@ async function closeOurs(run, browser) {
       run.browserCloseError = e.message;
     }
   } else if (run.pid && isAlive(run.pid)) {
-    execFileSync('powershell.exe', [
-      '-NoProfile',
-      '-Command',
-      `$p = Get-Process -Id ${run.pid} -ErrorAction SilentlyContinue; if ($p) { $null = $p.CloseMainWindow() }`,
-    ]);
+    process.kill(run.pid, 'SIGTERM');
   }
   const opts = { launchTimeMs: run.launchTimeMs, appDir: APP_DIR, preLaunchPids: run.preLaunchPids };
   const remaining = () => selectStopTargets(queryProcesses(), opts);
@@ -166,7 +145,7 @@ async function closeOurs(run, browser) {
     const { confirmed, goneBeforeStop } = stopRecordFor(fresh, planned);
     const rec = { ...planned, confirmed, goneBeforeStop, stopped: false };
     if (confirmed) {
-      execFileSync('taskkill', ['/PID', String(planned.pid), '/F']);
+      process.kill(planned.pid, 'SIGKILL');
       rec.stopped = true;
     }
     run.stopRecords.push(rec);
@@ -380,13 +359,14 @@ function readAsarFile(asarPath, inner) {
 const shaFile = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 
 function fingerprint() {
-  const pkg = JSON.parse(readAsarFile(`${APP_DIR}/resources/app.asar`, 'package.json').toString('utf8'));
-  const bm = JSON.parse(fs.readFileSync(`${APP_DIR}/resources/omo-runtime/win32-x64/bundle-manifest.json`, 'utf8'));
+  const runtime = runtimeDirOf(RESOURCES);
+  const pkg = JSON.parse(readAsarFile(path.join(RESOURCES, 'app.asar'), 'package.json').toString('utf8'));
+  const bm = JSON.parse(fs.readFileSync(path.join(runtime, 'bundle-manifest.json'), 'utf8'));
   return {
     appVersion: pkg.version,
-    client: shaFile(`${APP_DIR}/resources/omo-server/client/index.html`),
+    client: shaFile(path.join(RESOURCES, 'omo-server', 'client', 'index.html')),
     runtime: { omoRef: bm.omoRef, omoSha: bm.resolvedShas && bm.resolvedShas.omo },
-    plugin: shaFile(`${APP_DIR}/resources/omo-runtime/win32-x64/plugin/extensions/omo.js`),
+    plugin: shaFile(path.join(runtime, 'plugin', 'extensions', 'omo.js')),
   };
 }
 
@@ -659,7 +639,7 @@ async function negative(outDir) {
   });
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isEntry(import.meta.url)) {
   const out = process.argv[process.argv.indexOf('--out') + 1];
   if (!out || process.argv.indexOf('--out') < 0) {
     console.error('usage: node tools/probe-app.mjs --out <dir> [--negative]');

@@ -3,7 +3,7 @@
   "name": "Korean UI",
   "nameKo": "한글 화면",
   "descriptionKo": "앱 화면 글자를 한글로 바꿈",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "enabled": true,
   "order": 20,
   "entry": {
@@ -11,10 +11,6 @@
     "host": "host.mjs"
   },
   "contributes": {},
-  "testedBuilds": [
-    "8b8c0973690f9dc58a3aa0f04a2af8017490a32f2f60ab9c18b6c6d03a3ca279",
-    "9ae0f822a89fb040d965883a6db99db062a1dc2f4c125506f51bca9f4e04faf8"
-  ],
   "anchors": [
     {
       "selector": "#root",

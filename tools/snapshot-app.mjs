@@ -6,7 +6,8 @@
 //
 // Usage: node tools/snapshot-app.mjs --ev <evidenceDir> --snap <fixturesLiveDir>
 // Prints counts only; no page content or titles are printed.
-import { spawn, execFileSync } from 'node:child_process';
+import { isEntry } from './is-entry.mjs';
+import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { importLoader, importLoaderTool } from './loader-import.mjs';
@@ -14,17 +15,18 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveApp } from './app-paths.mjs';
+import { listProcesses } from './processes.mjs';
 const { connect } = await importLoader('cdp.mjs');
 const { spawnQaApp, describeQaEnv } = await importLoader('qa-env.mjs');
-const { readConfigAppExe } = await importLoader('deps.mjs');
 const { runWithLaunchedApp } = await importLoader('stop-select.mjs');
 const { redactHtml, residualScan } = await importLoaderTool('redact.mjs');
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '..');
-const APP_DIR = path.dirname(readConfigAppExe());
-const APP_EXE = `${APP_DIR}/OmO.exe`;
-const CLIENT = `${APP_DIR}/resources/omo-server/client`;
+// APP_DIR is the app bundle: every OmO process runs an executable inside it.
+const { bundle: APP_DIR, resources: RESOURCES, exe: APP_EXE } = await resolveApp();
+const CLIENT = path.join(RESOURCES, 'omo-server', 'client');
 const BOOT_DONE =
   "(() => { const b = document.querySelector('#boot-shell'); return !b || b.getAttribute('data-boot-shell-state') === 'done'; })()";
 
@@ -35,14 +37,13 @@ const argOf = (flag) => {
 const EV = argOf('--ev');
 const SNAP = argOf('--snap');
 const EXPECT_VERSION = argOf('--expect-version');
-const IS_ENTRY = !!process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const IS_ENTRY = isEntry(import.meta.url);
 if (IS_ENTRY && (!EV || !SNAP)) {
   console.error('usage: node tools/snapshot-app.mjs --ev <evidenceDir> --snap <fixturesLiveDir> [--expect-version <v>]');
   process.exit(2);
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const normWin = (p) => p.replace(/\\/g, '/').toLowerCase();
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 const shaFile = (p) => sha256(fs.readFileSync(p));
 
@@ -89,22 +90,16 @@ async function pollUntil(label, fn, timeoutMs) {
   throw new Error(`timeout waiting for ${label}: ${last}`);
 }
 
-// ---------- processes (identity by PID + creation time; tree from Win32_Process) ----------
+// ---------- processes (identity by PID + creation time; tree from ps) ----------
 function processTable() {
-  const out = execFileSync(
-    'powershell.exe',
-    [
-      '-NoProfile',
-      '-ExecutionPolicy',
-      'Bypass',
-      '-Command',
-      "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath,@{n='CreationDate';e={$_.CreationDate.ToString('o')}},CommandLine | ConvertTo-Json -Compress",
-    ],
-    { encoding: 'utf8', timeout: 60000 },
-  );
-  if (!out.trim()) return [];
-  const v = JSON.parse(out);
-  return Array.isArray(v) ? v : [v];
+  return listProcesses().map((p) => ({
+    ProcessId: p.pid,
+    ParentProcessId: p.ppid,
+    Name: path.basename(p.exePath),
+    CreationDate: new Date(p.createdMs).toISOString(),
+    ExecutablePath: p.exePath,
+    CommandLine: p.commandLine,
+  }));
 }
 
 function treeOf(rootPid, all) {
@@ -270,9 +265,9 @@ async function main() {
   const port = await freePort();
 
 
-  const pkg = JSON.parse(readAsarFile(`${APP_DIR}/resources/app.asar`, 'package.json').toString('utf8'));
+  const pkg = JSON.parse(readAsarFile(path.join(RESOURCES, 'app.asar'), 'package.json').toString('utf8'));
   resolveExpectVersion(EXPECT_VERSION, pkg.version);
-  const clientSha = shaFile(`${CLIENT}/index.html`);
+  const clientSha = shaFile(path.join(CLIENT, 'index.html'));
   const facts = JSON.parse(fs.readFileSync(path.join(REPO, 'docs', 'app-facts.json'), 'utf8'));
   const navPaths = facts.settingsNav.paths;
   const fpDir = path.join(SNAP, clientSha);
@@ -402,7 +397,7 @@ async function main() {
   const cssFiles = [];
   const cssSet = new Set(raw.flatMap((r) => r.census.cssPaths));
   for (const p of cssSet) {
-    const src = path.join(APP_DIR, 'resources', 'omo-server', 'client', p.replace(/^\//, ''));
+    const src = path.join(CLIENT, p.replace(/^\//, ''));
     if (!fs.existsSync(src)) {
       cssFiles.push({ path: p, missing: true });
       continue;
@@ -454,7 +449,7 @@ async function closeOwn(rootPid, browser) {
       timeline.browserCloseError = e.message;
     }
   } else if (isAlive(rootPid)) {
-    execFileSync('powershell.exe', ['-NoProfile', '-Command', `$p = Get-Process -Id ${rootPid} -ErrorAction SilentlyContinue; if ($p) { $null = $p.CloseMainWindow() }`]);
+    process.kill(rootPid, 'SIGTERM');
   }
   saveTimeline();
   const pids = before.map((p) => p.ProcessId);
@@ -466,8 +461,8 @@ async function closeOwn(rootPid, browser) {
     for (const p of before) {
       if (!isAlive(p.ProcessId)) continue;
       const cur = now.find((x) => x.ProcessId === p.ProcessId && x.CreationDate === p.CreationDate);
-      if (!cur || !normWin(cur.ExecutablePath ?? '').startsWith(normWin(APP_DIR))) continue;
-      execFileSync('taskkill', ['/PID', String(p.ProcessId), '/F']);
+      if (!cur || !(cur.ExecutablePath ?? '').startsWith(`${APP_DIR}/`)) continue;
+      process.kill(p.ProcessId, 'SIGKILL');
       timeline.forcedStops.push({ at: new Date().toISOString(), ...procRecord(cur) });
     }
     timeline.exitedAfterForce = await waitGone(pids, 15000);

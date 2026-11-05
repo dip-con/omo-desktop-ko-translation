@@ -6,7 +6,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "node --test --test-isolation=none test/*.test.mjs",
-    "test:local": "node --test --test-isolation=none test-local/*.test.mjs"
+    "test": "node --test --test-isolation=none --import ./test/helpers/temp-state.mjs test/*.test.mjs",
+    "test:local": "node --test --test-isolation=none --import ./test/helpers/temp-state.mjs test-local/*.test.mjs",
+    "collect": "node tools/collect-missing.mjs",
+    "add-key": "node tools/add-key.mjs"
   }
 }
