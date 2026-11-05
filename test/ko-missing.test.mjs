@@ -77,4 +77,20 @@ describe('host translate', () => {
       process.env.LOADER_STATE_DIR = saved;
     }
   });
+
+  it('records nothing when the page sends record: false', () => {
+    const dir = tempDir();
+    const saved = process.env.LOADER_STATE_DIR;
+    process.env.LOADER_STATE_DIR = dir;
+    try {
+      flushMissing();
+      handle('translate', [['Chat Only Label QQQ'], { record: false }]);
+      flushMissing();
+      const file = path.join(dir, 'ko-missing.json');
+      const strings = fs.existsSync(file) ? readDoc(file).strings : {};
+      assert.equal(Object.hasOwn(strings, 'Chat Only Label QQQ'), false);
+    } finally {
+      process.env.LOADER_STATE_DIR = saved;
+    }
+  });
 });

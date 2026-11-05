@@ -92,7 +92,9 @@ function sendBatch() {
   if (items.length === 0) return settle();
   var sent = items.map(function (item) { return currentValue(item.node, item.attr); });
   inflight += 1;
-  omoMods.call('translate', [sent]).then(
+  // Untranslated text is collected only on the settings screens; chat content is not dictionary material.
+  var record = location.hash.indexOf('#/settings') === 0;
+  omoMods.call('translate', [sent, { record: record }]).then(
     function (out) { applyBatch(items, sent, out); },
     function (err) {
       inflight -= 1;

@@ -42,11 +42,13 @@ export function handle(method, args) {
     if (!Array.isArray(texts) || texts.length > MAX_BATCH || !texts.every((t) => typeof t === 'string')) {
       throw new Error('translate takes one array of at most 500 strings');
     }
+    // args[1].record is false when the page is outside the screens the dictionary covers (the chat, for now).
+    const record = args[1]?.record !== false;
     const { entries, patterns, keepEnglish } = dictionary();
     return texts.map((t) => {
       const out = translateText(t, entries, patterns);
       const core = t.trim();
-      if (out === t && looksLikeUiText(core, keepEnglish)) recorder.record(core);
+      if (record && out === t && looksLikeUiText(core, keepEnglish)) recorder.record(core);
       return out;
     });
   }
