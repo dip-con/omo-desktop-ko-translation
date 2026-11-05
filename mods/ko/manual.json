@@ -163,6 +163,11 @@
       "ko": "프로세스 리소스 샘플을 수집하는 중...",
       "source": "resources/omo-server/client/assets/app~settings.diagnostics-GENu98fA.js",
       "note": "key emptyLabel not matched"
+    },
+    "Copy message": {
+      "ko": "메시지 복사",
+      "source": "runtime",
+      "note": "chat message action button"
     }
   }
 }

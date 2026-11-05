@@ -3169,7 +3169,8 @@
     "Check for Updates": "업데이트 확인",
     "Waiting for the resource history.": "리소스 기록을 기다리는 중이에요.",
     "Loading live processes...": "실시간 프로세스를 불러오는 중...",
-    "Collecting process resource samples...": "프로세스 리소스 샘플을 수집하는 중..."
+    "Collecting process resource samples...": "프로세스 리소스 샘플을 수집하는 중...",
+    "Copy message": "메시지 복사"
   },
   "patterns": {
     "^(.+) added$": "$1 추가됨",
