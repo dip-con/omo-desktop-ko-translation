@@ -7423,6 +7423,16 @@
       "ko": "로그인이 만료됐어요. 계속하려면 다시 로그인하세요.",
       "source": "runtime",
       "note": "settings bundle literal (bulk translation 2026-11-05)"
+    },
+    "System alerts when a thread finishes, fails, or needs input or approval. Applies to this device while OmO is open. If alerts don't appear, allow OmO in System Settings > Notifications.": {
+      "ko": "대화가 끝나거나 실패하거나 입력·승인이 필요할 때 시스템 알림을 보내요. OmO가 열려 있는 동안 이 기기에 적용돼요. 알림이 오지 않으면 시스템 설정 > 알림에서 OmO를 허용하세요.",
+      "source": "runtime",
+      "note": "thread-notifications description"
+    },
+    "If alerts don't appear, allow OmO in System Settings > Notifications.": {
+      "ko": "알림이 오지 않으면 시스템 설정 > 알림에서 OmO를 허용하세요.",
+      "source": "runtime",
+      "note": "thread-notifications description tail"
     }
   }
 }

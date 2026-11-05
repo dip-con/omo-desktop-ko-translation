@@ -4621,7 +4621,9 @@
     "Your session does not have permission to manage OmO Connect access.": "현재 세션에는 OmO Connect 접근 권한을 관리할 권한이 없어요.",
     "Your session on this environment cannot change its settings.": "이 환경의 현재 세션에서는 설정을 변경할 수 없어요.",
     "Your sign-in ended. Sign in again to continue.": "로그인이 종료됐어요. 계속하려면 다시 로그인하세요.",
-    "Your sign-in expired. Sign in again to continue.": "로그인이 만료됐어요. 계속하려면 다시 로그인하세요."
+    "Your sign-in expired. Sign in again to continue.": "로그인이 만료됐어요. 계속하려면 다시 로그인하세요.",
+    "System alerts when a thread finishes, fails, or needs input or approval. Applies to this device while OmO is open. If alerts don't appear, allow OmO in System Settings > Notifications.": "대화가 끝나거나 실패하거나 입력·승인이 필요할 때 시스템 알림을 보내요. OmO가 열려 있는 동안 이 기기에 적용돼요. 알림이 오지 않으면 시스템 설정 > 알림에서 OmO를 허용하세요.",
+    "If alerts don't appear, allow OmO in System Settings > Notifications.": "알림이 오지 않으면 시스템 설정 > 알림에서 OmO를 허용하세요."
   },
   "patterns": {
     "^(.+) added$": "$1 추가됨",
